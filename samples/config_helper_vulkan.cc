@@ -672,7 +672,8 @@ amber::Result ConfigHelperVulkan::CreateVulkanInstance(
     uint32_t engine_major,
     uint32_t engine_minor,
     std::vector<std::string> required_extensions,
-    bool disable_validation_layer) {
+    bool disable_validation_layer,
+    bool enable_performance_layers) {
   VkApplicationInfo app_info = VkApplicationInfo();
   app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 
@@ -1227,11 +1228,13 @@ amber::Result ConfigHelperVulkan::CreateConfig(
     const std::vector<std::string>& required_instance_extensions,
     const std::vector<std::string>& required_device_extensions,
     bool disable_validation_layer,
+    bool enable_performance_layers,
     bool show_version_info,
     std::unique_ptr<amber::EngineConfig>* cfg_holder) {
   amber::Result r = CreateVulkanInstance(engine_major, engine_minor,
                                          required_instance_extensions,
-                                         disable_validation_layer);
+                                         disable_validation_layer,
+                                         enable_performance_layers);
   if (!r.IsSuccess())
     return r;
 

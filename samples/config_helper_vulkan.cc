@@ -44,6 +44,17 @@ const char* const kRequiredValidationLayers[] = {
 const size_t kNumberOfRequiredValidationLayers =
     sizeof(kRequiredValidationLayers) / sizeof(const char*);
 
+const char* const kPerformanceLayers[] = {
+    "VK_LAYER_STADIA_pipeline_compile_time",
+    "VK_LAYER_STADIA_pipeline_runtime",
+    "VK_LAYER_STADIA_pipeline_cache_sideload",
+    "VK_LAYER_STADIA_memory_usage",
+    "VK_LAYER_STADIA_frame_time",
+};
+
+const size_t kNumberOfPerformanceLayers =
+    sizeof(kPerformanceLayers) / sizeof(const char*);
+
 const char kVariablePointers[] = "VariablePointerFeatures.variablePointers";
 const char kVariablePointersStorageBuffer[] =
     "VariablePointerFeatures.variablePointersStorageBuffer";
@@ -686,6 +697,8 @@ amber::Result ConfigHelperVulkan::CreateVulkanInstance(
   instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   instance_info.pApplicationInfo = &app_info;
 
+  std::vector<const char*> layerNames;
+  
   if (!disable_validation_layer) {
     if (!AreAllValidationLayersSupported())
       return amber::Result("Sample: not all validation layers are supported");
@@ -693,11 +706,20 @@ amber::Result ConfigHelperVulkan::CreateVulkanInstance(
       return amber::Result(
           "Sample: extensions of validation layers are not supported");
     }
-    instance_info.enabledLayerCount = kNumberOfRequiredValidationLayers;
-    instance_info.ppEnabledLayerNames = kRequiredValidationLayers;
-
+    for (size_t i = 0; i < kNumberOfRequiredValidationLayers; ++i) {
+        layerNames.push_back(kRequiredValidationLayers[i]);
+    }
     required_extensions.push_back(kExtensionForValidationLayer);
   }
+
+  if (enable_performance_layers) {
+    for (size_t i = 0; i < kNumberOfPerformanceLayers; ++i) {
+        layerNames.push_back(kPerformanceLayers[i]);
+    }
+  }
+
+  instance_info.enabledLayerCount = static_cast<uint32_t>(layerNames.size());
+  instance_info.ppEnabledLayerNames = instance_info.enabledLayerCount > 0 ? layerNames.data() : nullptr;
 
   available_instance_extensions_ = GetAvailableInstanceExtensions();
   if (!required_extensions.empty()) {
